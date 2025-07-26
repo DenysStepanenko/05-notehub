@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
+import { useDebounce } from "../hooks/useDebounce"; // Используем наш хук
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
@@ -22,7 +22,8 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  // Теперь используем наш хук
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);

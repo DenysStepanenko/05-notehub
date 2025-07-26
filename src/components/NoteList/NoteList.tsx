@@ -51,7 +51,6 @@ const NoteList: React.FC<NoteListProps> = ({
             <button 
               className={css.button}
               onClick={() => {
-                // Здесь будет логика удаления
                 console.log('Delete note:', note.id);
               }}
             >
