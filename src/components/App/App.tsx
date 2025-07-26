@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import SearchBox from "../SearchBox/SearchBox";
 import NoteList from "../NoteList/NoteList";
+import SearchBox from "../SearchBox/SearchBox";
+import Pagination from "../Pagination/Pagination";
+import Modal from "../Modal/Modal";
+import NoteForm from "../NoteForm/NoteForm";
 import css from "./App.module.css";
 
 const queryClient = new QueryClient({
@@ -19,12 +22,15 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Використовуємо debounce для пошуку
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Скидаємо на першу сторінку при пошуку
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage + 1);
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -35,6 +41,11 @@ const App: React.FC = () => {
       <div className={css.app}>
         <header className={css.toolbar}>
           <SearchBox value={searchTerm} onChange={handleSearchChange} />
+          <Pagination
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            searchTerm={debouncedSearchTerm}
+          />
           <button className={css.button} onClick={openModal}>
             Create note +
           </button>
@@ -44,13 +55,17 @@ const App: React.FC = () => {
           <NoteList
             currentPage={currentPage}
             searchTerm={debouncedSearchTerm}
-            onPageChange={setCurrentPage}
           />
         </main>
+
+        {isModalOpen && (
+          <Modal onClose={closeModal}>
+            <NoteForm onClose={closeModal} />
+          </Modal>
+        )}
       </div>
     </QueryClientProvider>
   );
 };
 
 export default App;
-
