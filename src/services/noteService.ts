@@ -1,91 +1,49 @@
-import axios, { type AxiosResponse } from "axios";
-import { type Note, type CreateNoteData } from "../types/note";
+import axios from 'axios';
+import type { Note } from '../types/note';
 
-const API_BASE_URL = "https://notehub-public.goit.study/api";
-
-// Створюємо екземпляр axios з базовою конфігурацією
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Додаємо інтерсептор для автоматичного додавання токену
-apiClient.interceptors.request.use((config) => {
-  const token = import.meta.env.VITE_NOTEHUB_TOKEN;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Інтерфейси для відповідей API
-export interface FetchNotesResponse {
-  data: Note[];
-  page: number;
-  perPage: number;
+interface NotesHttpResponse {
+  notes: Note[];
   totalPages: number;
-  totalItems: number;
 }
 
-export interface CreateNoteResponse {
-  data: Note;
+interface NewNote {
+  title: string;
+  content: string;
+  tag: 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 }
 
-export interface DeleteNoteResponse {
-  data: Note;
-}
+const URL = 'https://notehub-public.goit.study/api/notes';
 
-// Параметри для запиту нотаток
-export interface FetchNotesParams {
-  page?: number;
-  perPage?: number;
-  search?: string;
-}
-
-// Функція для отримання списку нотаток
 export const fetchNotes = async (
-  params: FetchNotesParams = {}
-): Promise<FetchNotesResponse> => {
-  const { page = 1, perPage = 12, search } = params;
-  
-  const queryParams = new URLSearchParams({
+  query: string,
+  page: number
+): Promise<NotesHttpResponse> => {
+  const parameters = new URLSearchParams({
+    ...(query !== '' ? { search: query } : {}),
     page: page.toString(),
-    perPage: perPage.toString(),
   });
-  
-  if (search && search.trim()) {
-    queryParams.append("search", search.trim());
-  }
-  
-  const response: AxiosResponse<FetchNotesResponse> = await apiClient.get(
-    `/notes?${queryParams.toString()}`
-  );
-  
+  const response = await axios.get<NotesHttpResponse>(`${URL}?${parameters}`, {
+    headers: {
+      Authorization: import.meta.env.VITE_TMDB_TOKEN,
+    },
+  });
   return response.data;
 };
 
-// Функція для створення нової нотатки
-export const createNote = async (
-  noteData: CreateNoteData
-): Promise<CreateNoteResponse> => {
-  const response: AxiosResponse<CreateNoteResponse> = await apiClient.post(
-    "/notes",
-    noteData
-  );
-  
+export const createNote = async (newNote: NewNote): Promise<Note> => {
+  const response = await axios.post<Note>(`${URL}`, newNote, {
+    headers: {
+      Authorization: import.meta.env.VITE_TMDB_TOKEN,
+    },
+  });
   return response.data;
 };
 
-// Функція для видалення нотатки
-export const deleteNote = async (
-  noteId: string
-): Promise<DeleteNoteResponse> => {
-  const response: AxiosResponse<DeleteNoteResponse> = await apiClient.delete(
-    `/notes/${noteId}`
-  );
-  
+export const deleteNote = async (id: number): Promise<Note> => {
+  const response = await axios.delete<Note>(`${URL}/${id}`, {
+    headers: {
+      Authorization: import.meta.env.VITE_TMDB_TOKEN,
+    },
+  });
   return response.data;
 };
-

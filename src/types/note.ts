@@ -1,21 +1,7 @@
-export type NoteTag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
-
 export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  tag: NoteTag;
-  createdAt: string;
-  updatedAt: string;
+    id: number;
+    title: string;
+    content: string;
+    tag: string;
+    isArchived?: boolean;
 }
-
-export interface CreateNoteData {
-  title: string;
-  content: string;
-  tag: NoteTag;
-}
-
-export interface UpdateNoteData extends Partial<CreateNoteData> {
-  id: string;
-}
-

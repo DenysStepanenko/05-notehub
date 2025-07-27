@@ -1,81 +1,46 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchNotes, deleteNote } from "../../services/noteService";
-import css from "./NoteList.module.css";
+import css from './NoteList.module.css';
+import type { Note } from '../../types/note';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { deleteNote } from '../../services/noteService';
 
 interface NoteListProps {
-  currentPage: number;
-  searchTerm: string;
+  notes: Note[];
 }
 
-const NoteList: React.FC<NoteListProps> = ({
-  currentPage,
-  searchTerm,
-}) => {
+export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
 
-  const {
-    data: notesData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["notes", currentPage, searchTerm],
-    queryFn: () => fetchNotes({ page: currentPage, search: searchTerm }),
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: (noteId: string) => deleteNote(noteId),
+  const mutation = useMutation({
+    mutationFn: (id: number) => deleteNote(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
-  const handleDelete = (noteId: string) => {
-    deleteNoteMutation.mutate(noteId);
+  const handleDelete = (id: number) => {
+    mutation.mutate(id);
   };
-
-  if (isLoading) {
-    return <div className={css.loading}>Loading notes...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className={css.error}>
-        Error loading notes. Please check your API token.
-        <br />
-        Error: {error instanceof Error ? error.message : 'Unknown error'}
-      </div>
-    );
-  }
-
-  if (!notesData?.data || notesData.data.length === 0) {
-    return (
-      <div className={css.empty}>
-        {searchTerm ? "No notes found for your search." : "No notes yet. Create your first note!"}
-      </div>
-    );
-  }
 
   return (
     <ul className={css.list}>
-      {notesData.data.map((note) => (
-        <li key={note.id} className={css.listItem}>
-          <h2 className={css.title}>{note.title}</h2>
-          <p className={css.content}>{note.content}</p>
+      {notes.map(({ title, content, tag, id }) => (
+        <li className={css.listItem} key={id}>
+          <h2 className={css.title}>{title}</h2>
+          <p className={css.content}>{content}</p>
           <div className={css.footer}>
-            <span className={css.tag}>{note.tag}</span>
-            <button 
+            <span className={css.tag}>{tag}</span>
+            <button
+              onClick={() => {
+                handleDelete(id);
+              }}
               className={css.button}
-              onClick={() => handleDelete(note.id)}
-              disabled={deleteNoteMutation.isPending}
+              disabled={mutation.isPending}
             >
-              {deleteNoteMutation.isPending ? "Deleting..." : "Delete"}
+              Delete
             </button>
           </div>
         </li>
       ))}
     </ul>
   );
-};
-
-export default NoteList;
-
+}
