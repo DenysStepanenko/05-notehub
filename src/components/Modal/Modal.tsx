@@ -1,27 +1,31 @@
-import { useEffect } from "react";
-import type { ReactNode } from "react";
-import { createPortal } from "react-dom";
-import css from "./Modal.module.css";
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import css from './Modal.module.css';
 
 interface ModalProps {
   children: ReactNode;
   onClose: () => void;
 }
 
-const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
+const Modal = ({ children, onClose }: ModalProps) => {
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleEscape);
-    document.body.style.overflow = "hidden";
+    const handleBodyScroll = () => {
+      document.body.style.overflow = 'hidden';
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    handleBodyScroll();
 
     return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'auto';
     };
   }, [onClose]);
 
@@ -31,6 +35,12 @@ const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
     }
   };
 
+  const modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) {
+    console.error('Modal root element not found');
+    return null;
+  }
+
   return createPortal(
     <div
       className={css.backdrop}
@@ -39,12 +49,19 @@ const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
       onClick={handleBackdropClick}
     >
       <div className={css.modal}>
+        <button 
+          className={css.closeButton}
+          onClick={onClose}
+          aria-label="Close modal"
+          type="button"
+        >
+          ✕
+        </button>
         {children}
       </div>
     </div>,
-    document.body
+    modalRoot
   );
 };
 
 export default Modal;
-

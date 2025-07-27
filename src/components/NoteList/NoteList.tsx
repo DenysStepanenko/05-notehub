@@ -1,65 +1,88 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "../../services/noteService";
-import css from "./NoteList.module.css";
+import type { Note } from '../../types/note';
+import css from './NoteList.module.css';
 
 interface NoteListProps {
-  currentPage: number;
-  searchTerm: string;
+  notes: Note[];
+  onDeleteNote: (noteId: string) => void;
+  isDeleting: boolean;
 }
 
-const NoteList: React.FC<NoteListProps> = ({
-  currentPage,
-  searchTerm,
-}) => {
-  const {
-    data: notesData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["notes", currentPage, searchTerm],
-    queryFn: () => fetchNotes({ page: currentPage, search: searchTerm }),
-  });
+const NoteList = ({ notes, onDeleteNote, isDeleting }: NoteListProps) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-  if (isLoading) {
-    return <div className={css.loading}>Loading notes...</div>;
-  }
+  const getTagColor = (tag: string) => {
+    const colors = {
+      Todo: '#ef4444',
+      Work: '#3b82f6',
+      Personal: '#10b981',
+      Meeting: '#f59e0b',
+      Shopping: '#8b5cf6'
+    };
+    return colors[tag as keyof typeof colors] || '#6b7280';
+  };
 
-  if (error) {
-    return (
-      <div className={css.error}>
-        Error loading notes. Please check your API token.
-      </div>
-    );
-  }
+  const getTagEmoji = (tag: string) => {
+    const emojis = {
+      Todo: '📝',
+      Work: '💼',
+      Personal: '👤',
+      Meeting: '🤝',
+      Shopping: '🛒'
+    };
+    return emojis[tag as keyof typeof emojis] || '📄';
+  };
 
-  if (!notesData?.data || notesData.data.length === 0) {
-    return (
-      <div className={css.empty}>
-        {searchTerm ? "No notes found for your search." : "No notes yet. Create your first note!"}
-      </div>
-    );
-  }
+  const handleDeleteClick = (noteId: string, noteTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete "${noteTitle}"?`)) {
+      onDeleteNote(noteId);
+    }
+  };
 
   return (
-    <ul className={css.list}>
-      {notesData.data.map((note) => (
-        <li key={note.id} className={css.listItem}>
-          <h2 className={css.title}>{note.title}</h2>
-          <p className={css.content}>{note.content}</p>
-          <div className={css.footer}>
-            <span className={css.tag}>{note.tag}</span>
-            <button 
-              className={css.button}
-              onClick={() => {
-                console.log('Delete note:', note.id);
-              }}
+    <div className={css.grid}>
+      {notes.map((note) => (
+        <article key={note.id} className={css.card}>
+          <div className={css.cardHeader}>
+            <h2 className={css.title}>{note.title}</h2>
+            <span 
+              className={css.tag}
+              style={{ backgroundColor: getTagColor(note.tag) }}
             >
-              Delete
+              {getTagEmoji(note.tag)} {note.tag}
+            </span>
+          </div>
+          
+          <div className={css.content}>
+            <p className={css.text}>
+              {note.content || 'No content'}
+            </p>
+          </div>
+          
+          <div className={css.cardFooter}>
+            <time className={css.date} dateTime={note.createdAt}>
+              {formatDate(note.createdAt)}
+            </time>
+            <button 
+              className={css.deleteButton}
+              onClick={() => handleDeleteClick(note.id, note.title)}
+              disabled={isDeleting}
+              aria-label={`Delete note: ${note.title}`}
+              type="button"
+            >
+              {isDeleting ? '⏳' : '🗑️'}
             </button>
           </div>
-        </li>
+        </article>
       ))}
-    </ul>
+    </div>
   );
 };
 
