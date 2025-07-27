@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { fetchNotes } from '../../services/noteService.ts';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.tsx';
 import Loader from '../Loader/Loader.tsx';
-import Modal from '../Modal/Modal.tsx';
+import Modal from '../Modal/Modal.module.tsx';
 import NoteList from '../NoteList/NoteList.tsx';
 import NoteForm from '../NoteForm/NoteForm.tsx';
 import Pagination from '../Pagination/Pagination.tsx';
@@ -42,6 +42,10 @@ export default function App() {
   const openModal = () => setIsModalNote(true);
   const closeModal = () => setIsModalNote(false);
 
+  const showToast = () => {
+    toast.success('Hello World!');
+  };
+
   return (
     <div className={css.app}>
       <Toaster position="top-center" reverseOrder={false} />
@@ -62,6 +66,7 @@ export default function App() {
           <NoteForm onClose={closeModal} />
         </Modal>
       )}
+      <button onClick={showToast}>Show Toast</button>
     </div>
   );
 }
