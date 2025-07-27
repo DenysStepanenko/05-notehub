@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import toast, { Toaster } from 'react-hot-toast';
 
 import { fetchNotes } from '../../services/noteService.ts';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.tsx';
 import Loader from '../Loader/Loader.tsx';
-import Modal from '../Modal/Modal.module.tsx';
+import Modal from '../Modal/Modal.module.tsx'; // ❌ Было: Modal.module.tsx
 import NoteList from '../NoteList/NoteList.tsx';
 import NoteForm from '../NoteForm/NoteForm.tsx';
 import Pagination from '../Pagination/Pagination.tsx';
@@ -26,12 +25,6 @@ export default function App() {
     placeholderData: keepPreviousData,
   });
 
-  useEffect(() => {
-    if (isSuccess && data.notes.length === 0) {
-      toast.error('No notes found for your request.');
-    }
-  }, [isSuccess, data]);
-
   const totalPages = data?.totalPages ?? 0;
   
   const updateQuery = useDebouncedCallback((newQuery: string) => {
@@ -42,13 +35,8 @@ export default function App() {
   const openModal = () => setIsModalNote(true);
   const closeModal = () => setIsModalNote(false);
 
-  const showToast = () => {
-    toast.success('Hello World!');
-  };
-
   return (
     <div className={css.app}>
-      <Toaster position="top-center" reverseOrder={false} />
       <header className={css.toolbar}>
         <SearchBox value={query} onSearch={updateQuery} />
         {isSuccess && totalPages > 1 && (
@@ -66,7 +54,6 @@ export default function App() {
           <NoteForm onClose={closeModal} />
         </Modal>
       )}
-      <button onClick={showToast}>Show Toast</button>
     </div>
   );
 }
