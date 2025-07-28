@@ -5,7 +5,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchNotes } from '../../services/noteService.ts';
 import ErrorMessage from '../ErrorMessage/ErrorMessage.tsx';
 import Loader from '../Loader/Loader.tsx';
-import Modal from '../Modal/Modal.tsx'; // ❌ Было: Modal.module.tsx
+import Modal from '../Modal/Modal.tsx'; 
 import NoteList from '../NoteList/NoteList.tsx';
 import NoteForm from '../NoteForm/NoteForm.tsx';
 import Pagination from '../Pagination/Pagination.tsx';
